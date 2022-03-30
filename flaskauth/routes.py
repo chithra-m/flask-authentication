@@ -1,11 +1,10 @@
-from flask import Flask, render_template, request, url_for, flash, redirect, session
-from forms import RegistrationForm, LoginForm, RequestResetForm, ResetPasswordForm
-# from model import db, save_db
-from base import bcrypt
-from model import db, Users, app, mail
+from flask import render_template, request, url_for, flash, redirect, session
 from flask_login import login_user, current_user, logout_user, login_required
 from datetime import timedelta
 from flask_mail import Message
+from flaskauth import bcrypt, db, app
+from flaskauth.forms import RegistrationForm, LoginForm, RequestResetForm, ResetPasswordForm
+from flaskauth.model import Users
 
 @app.route("/")
 @app.route("/home")
@@ -82,7 +81,7 @@ def send_reset_email(user):
 
 If you did not make this request then simply ignore this email and no changes will be made.
 '''
-    mail.send(msg)
+    # mail.send(msg)
 
 
 @app.route("/reset_password", methods=['GET', 'POST'])
@@ -116,5 +115,3 @@ def reset_token(token):
     return render_template('reset_token.html', title='Reset Password', form=form)
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
