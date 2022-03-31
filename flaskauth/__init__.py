@@ -19,8 +19,8 @@ app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_USERNAME'] = "chithracse18@gmail.com"
-app.config['MAIL_PASSWORD'] =  "Lekha@123"
+app.config['MAIL_USERNAME'] = "your email"
+app.config['MAIL_PASSWORD'] =  "email password"
 mail = Mail(app)
 
 app.config['RECAPTCHA_USE_SSL'] = True
