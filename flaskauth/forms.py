@@ -31,13 +31,13 @@ class RegistrationForm(FlaskForm):
         if user:
             raise ValidationError('That email is taken. Please choose a different one.')
 
-    def validate_password(self, password):
-        # if not re.search(r"[A-Z]+", password):
-        if not re.search(r"(\d+)", str(password)):
-            raise ValidationError(".")
+    # def validate_password(self, password):
+    #     # if not re.search(r"[A-Z]+", password):
+    #     if not re.search(r"(\d+)", str(password)):
+    #         raise ValidationError(".")
 
-        if not re.search(r"([a-zA-Z]+)( !#$%&'()@,-./^_`{|}~) (\d+)", str(password)):
-            raise ValidationError("Your password must have atleast 8 characters, 1 upper case letter, 1 lower case letter, 1 special char & a number.")
+    #     if not re.search(r"([a-zA-Z]+)( !#$%&'()@,-./^_`{|}~) (\d+)", str(password)):
+    #         raise ValidationError("Your password must have atleast 8 characters, 1 upper case letter, 1 lower case letter, 1 special char & a number.")
 
 
 class LoginForm(FlaskForm):

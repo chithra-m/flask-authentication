@@ -2,9 +2,10 @@ from flask import render_template, request, url_for, flash, redirect, session
 from flask_login import login_user, current_user, logout_user, login_required
 from datetime import timedelta
 from flask_mail import Message
-from flaskauth import bcrypt, db, app, mail
+from flaskauth import bcrypt, db, app, mail, oauth
 from flaskauth.forms import RegistrationForm, LoginForm, RequestResetForm, ResetPasswordForm
 from flaskauth.model import Users
+import os
 
 @app.route("/")
 @app.route("/home")
@@ -70,7 +71,61 @@ def before_request():
     session.permanent = True
     app.permanent_session_lifetime = timedelta(minutes=1)
 
+@app.route('/google/')
+def google():
 
+    GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
+    GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
+
+    CONF_URL = 'https://accounts.google.com/.well-known/openid-configuration'
+    oauth.register(
+        name='google',
+        client_id=GOOGLE_CLIENT_ID,
+        client_secret=GOOGLE_CLIENT_SECRET,
+        server_metadata_url=CONF_URL,
+        client_kwargs={
+            'scope': 'openid email profile', 
+            # 'scope' : ' https://www.googleapis.com/auth/userinfo.profile'
+        }
+    )
+
+    # Redirect to google_auth function
+    redirect_uri = url_for('google_auth', _external=True)
+    print(redirect_uri)
+    return oauth.google.authorize_redirect(redirect_uri)
+
+
+@app.route('/google/auth/')
+def google_auth():
+    token = oauth.google.authorize_access_token()
+    print(" Google User ", token)
+    # user = oauth.google.parse_id_token(token)
+    user_email = token['userinfo']['email']
+    print(type(token))
+    # print(userinfo)
+    user = Users.query.filter_by(email= user_email).first()
+        
+    if user is None:
+        flash(f"{user_email} does not exist. Create an Acccount", 'danger' )
+        return redirect(url_for('register'))
+
+    elif user_email == user.email :
+        flash('You have been logged in!', 'success')
+        login_user(user)
+        return redirect(url_for('home'))
+
+    return token
+
+
+@app.route("/delete_account/<email>")
+def delete_account(email):
+    try:
+        if email:
+            db.session.delete(Users.query.filter_by(email= email).first())
+            db.session.commit()
+        return "Deleted Successfully"
+    except Exception as error:
+        return "{email} does not exist."
 # def send_reset_email(user):
 #     token = user.get_reset_token()
 #     msg = Message('Password Reset Request',
