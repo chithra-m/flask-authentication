@@ -1,6 +1,6 @@
 from flask_login import UserMixin
-# from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from flaskauth import login_manager, db, app
+from flaskauth import login_manager, db
+from datetime import datetime, timedelta
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -13,16 +13,21 @@ class Users(db.Model, UserMixin):
     email = db.Column(db.String(50), nullable=False, unique=True)
     password = db.Column(db.String(50), nullable=False)
 
-    # def get_reset_token(self, expires_sec=1800):
-    #     s = Serializer(app.config['SECRET_KEY'], expires_sec)
-    #     return s.dumps({'user_id': self.id}).decode('utf-8')
-    #     # Creates token with 30 minutes expiration
-        
-    # @staticmethod
-    # def verify_reset_token(token):
-    #     s = Serializer(app.config['SECRET_KEY'])
-    #     try:    
-    #         user_id = s.loads(token)['user_id']
-    #     except:
-    #         return None
-    #     return Users.query.get(user_id)
+    def __init__(self, username, email, password):
+        self.username = username
+        self.email = email
+        self.password = password
+
+class Otp(db.Model):
+    __tablename__ = 'otp'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    otp_value = db.Column(db.Integer, nullable=False)
+    created_datetime = db.Column(db.DateTime, nullable=False, default=datetime.now())
+    user_id = db.Column(db.Integer,db.ForeignKey('users.id') ,nullable=False)
+    expired_datetime = db.Column(db.DateTime, nullable=False, default = datetime.now() + timedelta(minutes=5))
+    auth_type = db.Column(db.String(50), default="From forget password")
+
+    def __init__(self, otp_value, user_id, auth_type):
+        self.otp_value = otp_value
+        self.user_id = user_id
+        self.auth_type = auth_type
