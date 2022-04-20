@@ -5,12 +5,10 @@ from flask_login import LoginManager
 from flask_bcrypt import Bcrypt
 from flask_mail import Mail
 from authlib.integrations.flask_client import OAuth
-import pyotp
-
-totp = pyotp.TOTP("base32secret3232")
 
 app = Flask(__name__)
 oauth = OAuth(app)
+
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI']= 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -31,6 +29,13 @@ app.config['RECAPTCHA_USE_SSL'] = True
 app.config['RECAPTCHA_PUBLIC_KEY']='6LeyeCwfAAAAAPF5eLXYt67IokWQmMIXkFofRZn6'
 app.config['RECAPTCHA_PRIVATE_KEY']='6LeyeCwfAAAAAGqkcsrKymQeKfQ_UyxXj6ynVO7e'
 app.config['RECAPTCHA_OPTIONS']= {'theme':'black'}
-from flaskauth import routes
+
+from flaskauth.users.routes import users
+from flaskauth.posts.routes import posts
+from flaskauth.main.routes import main
+
+app.register_blueprint(users)
+app.register_blueprint(posts)
+app.register_blueprint(main)
 
 
