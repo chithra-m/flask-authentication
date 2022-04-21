@@ -1,6 +1,6 @@
 from email.policy import default
 from flask_login import UserMixin
-from flaskauth import login_manager, db, app
+from flaskauth import login_manager, db
 from datetime import datetime, timedelta
 
 

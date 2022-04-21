@@ -1,8 +1,8 @@
-from flaskauth import app, db
+from flaskauth import create_app, db
 import logging
 
-db.init_app(app)
-
+# db.init_app(app)
+app = create_app()
 with app.app_context():
     db.create_all()
 logging.info('Db tables created')

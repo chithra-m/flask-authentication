@@ -1,9 +1,9 @@
 from flask import Blueprint
-from flask import render_template, request, url_for, flash, redirect, session
+from flask import render_template, request, url_for, flash, redirect, session, current_app
 from flask_login import login_user, current_user, logout_user, login_required
 from datetime import timedelta, datetime
 from flask_mail import Message
-from flaskauth import bcrypt, db, app, mail, oauth
+from flaskauth import bcrypt, db, mail, oauth
 from flaskauth.users.forms import (RegistrationForm, LoginForm, AccountUpdateForm,
                              RequestResetForm, ResetPasswordForm, otpRequestForm)
 from flaskauth.model import Users, Otp, Post
@@ -41,7 +41,7 @@ def register():
 @users.route("/login", methods=['GET', 'POST'])
 def login():
     session.permanent = True
-    app.permanent_session_lifetime = timedelta(minutes=1)
+    current_app.permanent_session_lifetime = timedelta(minutes=1)
     form = LoginForm()
     if current_user.is_authenticated:
         return redirect(url_for('main.home'))

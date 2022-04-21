@@ -1,41 +1,37 @@
-import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_bcrypt import Bcrypt
 from flask_mail import Mail
 from authlib.integrations.flask_client import OAuth
+from flaskauth.config import Config
 
-app = Flask(__name__)
-oauth = OAuth(app)
 
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
-app.config['SQLALCHEMY_DATABASE_URI']= 'sqlite:///database.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
-login_manager = LoginManager(app)
+oauth = OAuth()
+db = SQLAlchemy()
+login_manager = LoginManager()
 login_manager.login_view = 'login'
-bcrypt = Bcrypt(app)
+bcrypt = Bcrypt()
+mail = Mail()
 
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_USERNAME'] = "your email"
-app.config['MAIL_PASSWORD'] =  "email password"
-mail = Mail(app)
 
-app.config['RECAPTCHA_USE_SSL'] = True
-app.config['RECAPTCHA_PUBLIC_KEY']='6LeyeCwfAAAAAPF5eLXYt67IokWQmMIXkFofRZn6'
-app.config['RECAPTCHA_PRIVATE_KEY']='6LeyeCwfAAAAAGqkcsrKymQeKfQ_UyxXj6ynVO7e'
-app.config['RECAPTCHA_OPTIONS']= {'theme':'black'}
+def create_app(config_class=Config):
+    app = Flask(__name__)
+    app.config.from_object(Config)
 
-from flaskauth.users.routes import users
-from flaskauth.posts.routes import posts
-from flaskauth.main.routes import main
+    oauth.init_app(app)
+    db.init_app(app)
+    login_manager.init_app(app)
+    bcrypt.init_app(app)
+    mail .init_app(app)
 
-app.register_blueprint(users)
-app.register_blueprint(posts)
-app.register_blueprint(main)
+    from flaskauth.users.routes import users
+    from flaskauth.posts.routes import posts
+    from flaskauth.main.routes import main
 
+    app.register_blueprint(users)
+    app.register_blueprint(posts)
+    app.register_blueprint(main)
+    
+    return app
 
