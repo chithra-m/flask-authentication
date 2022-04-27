@@ -6,11 +6,12 @@ from flask_mail import Message
 from flaskauth import bcrypt, db, mail, oauth
 from flaskauth.users.forms import (RegistrationForm, LoginForm, AccountUpdateForm,
                              RequestResetForm, ResetPasswordForm, otpRequestForm)
-from flaskauth.model import Users, Otp, Post
+from flaskauth.model import Users, Otp, Post, Role
+from flaskauth.users.utils import save_picture
 from sqlalchemy import desc
 import pyotp
-from flaskauth.users.utils import save_picture
 import os
+from functools import wraps
 
 totp = pyotp.TOTP("base32secret3232")
 
@@ -61,6 +62,28 @@ def login():
         else:
             flash('Login Unsuccessful. Please check username and password', 'danger')
     return render_template('login.html', title='Login', form=form)
+
+
+def login_required(f):
+    @wraps(f)
+    def _login_required(*args, **kwargs):
+        if current_user.is_anonymous:
+            flash("You need to logged in to access this page", "danger")
+            return redirect(url_for("users.login"))
+        return f(*args, **kwargs)
+    return _login_required
+
+
+def roles_required(role):
+    def _role_required(f):
+        @wraps(f)
+        def __role_required(*args, **kwargs):
+            if not current_user.is_role(role):
+                flash("You don't have permission to access this page.", "danger")
+                return redirect(url_for('main.home'))
+            return f(*args, **kwargs)
+        return __role_required
+    return _role_required
 
 
 @users.route("/logout")
@@ -230,3 +253,11 @@ def user_posts(username):
         .order_by(Post.date_posted.desc())\
         .paginate(page=page, per_page=5)
     return render_template('user_posts.html', posts=posts, user=user)
+
+
+@users.route("/admin")
+@login_required
+@roles_required(Role.ADMIN)
+def admin_dashboard():
+    users = Users.query.all()
+    return render_template("show_all_users.html", users = users)

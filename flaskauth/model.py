@@ -2,6 +2,7 @@ from email.policy import default
 from flask_login import UserMixin
 from flaskauth import login_manager, db
 from datetime import datetime, timedelta
+import enum
 
 
 @login_manager.user_loader
@@ -15,13 +16,21 @@ class Users(db.Model, UserMixin):
     email = db.Column(db.String(50), nullable=False, unique=True)
     password = db.Column(db.String(50), nullable=False)
     image_file = db.Column(db.String(100), nullable=False, default="default.jpg")
+    role_id = db.Column(db.Integer, default=2)
     otp_val = db.relationship('Otp', backref='user', lazy=True)
     posts = db.relationship('Post', backref='author', lazy=True)
 
-    def __init__(self, username, email, password):
+    def __init__(self, username, email, password, role_id):
         self.username = username
         self.email = email
         self.password = password
+        self.role_id = role_id
+
+    def is_admin(self):
+        return self.role_id == Role.ADMIN
+
+    def is_role(self, role):
+        return self.role_id == role.value
         
 
 class Otp(db.Model):
@@ -49,3 +58,8 @@ class Post(db.Model):
         self.title = title
         self.content = content
         self.user_id = user_id
+
+
+class Role(enum.Enum):
+    ADMIN = 1
+    USER = 2
